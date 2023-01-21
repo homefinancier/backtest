@@ -1,0 +1,51 @@
+//@version=5
+strategy("rsi for youtube",  overlay=true, default_qty_type=strategy.percent_of_equity, default_qty_value=100, initial_capital=1000, commission_type=strategy.commission.percent, commission_value=0.08)
+
+// Settings
+length = input.int(4, minval=1, title='RSI Length')
+length_sma = input.int(150, minval=1, title='SMA1')
+length_sma2 = input.int(30, minval=1, title='SMA12')
+
+
+// From Date Inputs
+useDateFilter = input.bool(true, title="Begin Backtest at Start Date",
+     group="Backtest Time Period")
+backtestStartDate = input.time(timestamp("1 Jan 2000"), 
+     title="Start Date", group="Backtest Time Period",
+     tooltip="This start date is in the time zone of the exchange " + 
+     "where the chart's instrument trades. It doesn't use the time " + 
+     "zone of the chart or of your computer.")
+
+// STEP 2. See if current bar happens on, or later than, the start date
+inTradeWindow = not useDateFilter or time >= backtestStartDate
+
+//...............................................................................
+// RSI and SMA
+rsi = ta.rsi(close, length)
+sma1 = ta.sma(close, length_sma)
+sma2 = ta.sma(close, length_sma2)
+
+if  rsi < 30  and close > sma1 and close < sma2
+    strategy.entry("Long", strategy.long, when = inTradeWindow)
+
+SLlong = input.float(title="SLlong", defval=0.8, step = 0.1)
+TPlong = input.float(title="TPlong", defval=0.2, step = 0.1)
+
+SL = SLlong
+TP = TPlong
+
+longstop = strategy.position_avg_price*(1-SL)
+longprofit = strategy.position_avg_price*(1+TP)
+
+
+
+if  strategy.position_size>0
+    strategy.exit("Long", stop=longstop, limit=longprofit, when = inTradeWindow)
+
+if (not inTradeWindow)
+    strategy.close_all()
+    strategy.cancel_all()
+
+
+
+
