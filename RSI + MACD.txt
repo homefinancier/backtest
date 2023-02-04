@@ -1,0 +1,38 @@
+//@version=5
+strategy("Home_financier_rsi + macd for youtube",  overlay=true, default_qty_type=strategy.percent_of_equity, default_qty_value=100, initial_capital=1000, commission_type=strategy.commission.percent, commission_value=0.08)
+
+// From Date Inputs
+useDateFilter = input.bool(true, title="Begin Backtest at Start Date",
+     group="Backtest Time Period")
+backtestStartDate = input.time(timestamp("1 Jan 2013"), 
+     title="Start Date", group="Backtest Time Period",
+     tooltip="This start date is in the time zone of the exchange " + 
+     "where the chart's instrument trades. It doesn't use the time " + 
+     "zone of the chart or of your computer.")
+inTradeWindow = not useDateFilter or time >= backtestStartDate
+
+//Step Two: Parameter Setting
+length = input.int(10, minval=1, title='RSI Length')
+levelRSiEnterL = input.int(defval=36, step=1)
+levelRSiExitL = input.int(defval=78, step=1)
+levelRSiEnterS = input.int(defval=78, step=1)
+levelRSiExitS = input.int(defval=36, step=1)
+
+rsi = ta.rsi(close, length)
+// [macdLine, signalLine, histLine] = ta.macd(close, 12, 26, 9)
+
+if ta.crossover(rsi, levelRSiEnterL) 
+    strategy.entry("Long", strategy.long, comment="Long",  when = inTradeWindow)
+
+if ta.crossover(rsi, levelRSiExitL)
+    strategy.close("Long", comment="Exit Long", when = inTradeWindow)
+
+
+if ta.crossunder(rsi, levelRSiEnterS) 
+    strategy.entry("Short", strategy.short, comment="Enter Short",  when = inTradeWindow)
+
+if ta.crossunder(rsi, levelRSiExitS)
+    strategy.close("Short", comment="Exit Short",  when = inTradeWindow)
+
+//and ta.crossover(histLine, 0)
+// ta.crossover(macdLine, 0)
