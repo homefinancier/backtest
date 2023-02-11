@@ -1,0 +1,47 @@
+//@version=5
+strategy("bollinger for youtube",  overlay=true, default_qty_type=strategy.percent_of_equity, default_qty_value=100, initial_capital=1000, commission_type=strategy.commission.percent, commission_value=0.08)
+
+// From Date Inputs
+useDateFilter = input.bool(true, title="Begin Backtest at Start Date",
+     group="Backtest Time Period")
+backtestStartDate = input.time(timestamp("1 Jan 2000"), 
+     title="Start Date", group="Backtest Time Period",
+     tooltip="This start date is in the time zone of the exchange " + 
+     "where the chart's instrument trades. It doesn't use the time " + 
+     "zone of the chart or of your computer.")
+
+inTradeWindow = not useDateFilter or time >= backtestStartDate
+
+//.............................................................................../
+
+[middle,upper,lower]=ta.bb(close[1],10,2)
+
+length_sma = input.int(200, minval=1)
+
+
+sma = ta.sma(close, length_sma)
+
+if  close[1] < lower and close > sma
+    strategy.entry("Long", strategy.long, when = inTradeWindow)
+
+SLlong = input.float(title="SLlong", defval=0.1, step = 0.1)
+TPlong = input.float(title="TPlong", defval=0.4, step = 0.1)
+
+SL = SLlong
+TP = TPlong
+
+longstop = strategy.position_avg_price*(1-SL)
+longprofit = strategy.position_avg_price*(1+TP)
+
+
+if  strategy.position_size>0
+    strategy.exit("Long", stop=longstop, limit=longprofit, when = inTradeWindow)
+
+
+if (not inTradeWindow)
+    strategy.close_all()
+    strategy.cancel_all()
+
+
+
+
