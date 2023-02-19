@@ -1,0 +1,31 @@
+//@version=5
+strategy("Home_financier_larry_williamsfor youtube",  overlay=true, default_qty_type=strategy.percent_of_equity, default_qty_value=100, initial_capital=1000, commission_type=strategy.commission.percent, commission_value=0.08)
+
+// Settings
+length_bars = input.int(5, step = 1, title='how bars back')
+length = input.int(-95, step = 1, title='bars back')
+length_now = input.int(-85, step = 1, title='bar now')
+
+
+x = ta.wpr(10)
+
+if  x[length_bars] < length  and x > length_now
+    strategy.entry("Long", strategy.long)
+
+SLlong = input.float(title="SLlong", defval=0.1, step = 0.1)
+TPlong = input.float(title="TPlong", defval=0.3, step = 0.1)
+
+SL = SLlong
+TP = TPlong
+
+longstop = strategy.position_avg_price*(1-SL)
+longprofit = strategy.position_avg_price*(1+TP)
+
+if  strategy.position_size>0
+    strategy.exit("Long", stop=longstop, limit=longprofit)
+
+
+
+
+
+
