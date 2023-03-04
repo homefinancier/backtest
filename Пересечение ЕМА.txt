@@ -1,0 +1,21 @@
+//@version=5
+strategy("Home_financier_ema for youtube",  overlay=true, default_qty_type=strategy.percent_of_equity, default_qty_value=100, initial_capital=1000, commission_type=strategy.commission.percent, commission_value=0.08)
+
+
+//Step Two: Parameter Setting
+
+EMA = input.int(26, minval=1, title='EMA')
+EMA1 = input.int(28, minval=1, title='EMA2')
+
+ema = ta.ema(close, EMA)
+ema2 = ta.ema(close, EMA1)
+
+if ta.crossover(ema, ema2) 
+    strategy.entry("Long", strategy.long, comment="Long")
+
+
+if ta.crossunder(ema, ema2) 
+    strategy.entry("Short", strategy.short, comment="Enter Short")
+
+
+
