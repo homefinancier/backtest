@@ -1,0 +1,41 @@
+//@version=5
+strategy('Home_financier_stoch for youtube', overlay=true, initial_capital=10000, default_qty_type=strategy.percent_of_equity, default_qty_value=100, commission_type=strategy.commission.percent, commission_value=0)
+
+
+// From Date Inputs
+useDateFilter = input.bool(true, title="Begin Backtest at Start Date",
+     group="Backtest Time Period")
+backtestStartDate = input.time(timestamp("1 Feb 1998"), 
+     title="Start Date", group="Backtest Time Period",
+     tooltip="This start date is in the time zone of the exchange " + 
+     "where the chart's instrument trades. It doesn't use the time " + 
+     "zone of the chart or of your computer.")
+
+// STEP 2. See if current bar happens on, or later than, the start date
+inTradeWindow = not useDateFilter or time >= backtestStartDate
+
+smoothK = input.int(3, "K", minval=1)
+smoothD = input.int(3, "D", minval=1)
+lengthRSI = input.int(14, "RSI Length", minval=1)
+lengthStoch = input.int(14, "Stochastic Length", minval=1)
+src = input(close, title="RSI Source")
+rsi1 = ta.rsi(src, lengthRSI)
+k = ta.sma(ta.stoch(rsi1, rsi1, rsi1, lengthStoch), smoothK)
+d = ta.sma(k, smoothD)
+// plot(k, "K", color=#2962FF)
+// plot(d, "D", color=#FF6D00)
+// h0 = hline(80, "Upper Band", color=#787B86)
+// hline(50, "Middle Band", color=color.new(#787B86, 50))
+// h1 = hline(20, "Lower Band", color=#787B86)
+// fill(h0, h1, color=color.rgb(33, 150, 243, 90), title="Background")
+
+Enterx = input.int(28, minval=1, title='enter') //28
+Exitx = input.int(82, minval=1, title='exit') //82
+
+
+if ta.crossover(k, Enterx) 
+    strategy.entry('stoch', strategy.long, when = inTradeWindow)
+
+if ta.crossunder(k, Exitx)
+    strategy.close('stoch', when = inTradeWindow)
+
